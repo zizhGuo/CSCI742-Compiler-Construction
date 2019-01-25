@@ -1,14 +1,20 @@
 # assign0
 
-A Clojure library designed to ... well, that part is up to you.
+This is the assignment 0 for the class CSCI-742 Compiler Construction.
 
-## Usage
+Assignment description:
+https://www.cs.rit.edu/~anh/Assign0_cc.pdf
 
-FIXME
+Author: Zizhun Guo
+Contact: zg2808@cs.rit.edu
 
-## License
 
-Copyright © 2019 FIXME
+## License 
+
+Copyright © 2019 Rochester Institute of Technology
+
+This program is not allowed to be shared for any form of usages. 
+Please inform me for any purpose of references.
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at
