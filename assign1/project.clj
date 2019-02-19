@@ -7,4 +7,5 @@
   :main ^:skip-aot assign1.core
   :target-path "target/%s"
   :resource-paths ["resources/lexDemo.jar"]
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}}
+)

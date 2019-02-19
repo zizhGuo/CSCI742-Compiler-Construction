@@ -1,6 +1,6 @@
 ; Part B of HW1
- (ns assign1.lexer
- 	(:use [assign1.genLex :only (make-lexer)]))
+; (ns assign1.lexer
+; 	;(:use [assign1.genLex :only (make-lexer)]))
 	;(:use [csci742.lexer :only (make-lexer)]))
 
 
@@ -72,7 +72,6 @@
 		((lower (range \a \z)); lower → a · · · z
 		(upper (range \A \Z)); upper → A · · · Z
 		(letter (or upper lower)); letter → lower | upper
-    (letters (+ letter))
 		(digit (range \0 \9));digit → 0 · · · 9
 		(idfirst (or (or letter \_) \$)); idfirst → letter | | $
 		(idrest (or idfirst digit)); idrest → idfirst | digit
@@ -80,135 +79,128 @@
 		(digits (+ digit)); digits → digit+
 		(double (seqn digits (seqn (? (seqn \. digits)) 
 								   (? (seqn (or \E \e) 
-								   	  		(seqn (? (seqn \+ \-)) 
+								   	  		(seqn (? (seqn + -)) 
 								   	  			  digits))))));double → digits(. digits)?((E | e)(+ | −) ?digits)?
 		(string (seqn \" 
-      					  (seqn (* (all-except (\")))
-      					  		   \"))); string → "(Σ − {"})*"
-    ))
-
-  (def-patterns
-    ("case"
-    "of"
-    "if"
-    "then"
-    "else"
-    "True"
-    "False"
-    "error"
-    "data"
-    "Boolean"
-    "Integer"
-    "Double"
-    "String"
-    (+ whitespace)
-    "let"
-    "in"
-    "="
-    ","
-    "+"
-    "-"
-    "*"
-    "/"
-    "=="
-    "/="
-    "<="
-    "<"
-    ">="
-    ">"
-    "+."
-    "-."
-    "*."
-    "/."
-    "==."
-    "/=."
-    "<=."
-    "<."
-    ">=."
-    ">."
-    "\\"
-    "->"
-    "&&"
-    "||"
-    "("
-    ")"
-    ";"
-    "["
-    "]"
-    "::"
-    ":"
-    "_"
-    "@"
-    ident
-    digits
-    string
-    double))))
-  	
-
+					  (seqn ('all-except \")
+					  		\"))); string → "(Σ − {"})*"
+	(def-patterns
+		(
+		"case"
+		"of"
+		"if"
+		"then"
+		"else"
+		"True"
+		"False"
+		"error"
+		"data"
+		"Boolean"
+		"Integer"
+		"Double"
+		"String"
+		(+ whitespace)
+		"let"
+		"in"
+		"="
+		","
+		"+"
+		"-"
+		"*"
+		"/"
+		"=="
+		"/="
+		"<="
+		"<"
+		">="
+		">"
+		"+."
+		"-."
+		"*."
+		"/."
+		"==."
+		"/=."
+		"<=."
+		"<."
+		">=."
+		">."
+		"\\"
+		"->"
+		"&&"
+		"||"
+		"("
+		")"
+		";"
+		"["
+		"]"
+		"::"
+		":"
+		"_"
+		"@"
+		ident
+		digits
+		string
+		double
+		))))))
 (def lex-spec-actions
 	(list 
-		make-case-tok
-		make-of-tok
-		make-if-tok
-		make-then-tok
-		make-else-tok
-		make-true-tok
-		make-false-tok
-		make-error-tok
-		make-data-tok
-		make-boolean-tok
-		make-integer-tok
-		make-double-tok
-		make-string-tok
-		make-ignore
-		make-let-tok
-		make-in-tok
-		make-equal-tok
-		make-comma-tok
-		make-plus-tok
-		make-minus-tok
-		make-star-tok
-		make-slash-tok
-		make-equal2-tok
-		make-notEqual-tok
-		make-leq-tok
-		make-less-tok
-		make-geq-tok
-		make-greater-tok
-		make-plusDouble-tok
-		make-minusDouble-tok
-		make-timeDouble-tok
-		make-divideDouble-tok
-		make-equal2Double-tok
-		make-notEqualDouble-tok
-		make-leqDouble-tok
-		make-lessDouble-tok
-		make-geqDouble-tok
-		make-greaterDouble-tok
-		make-lambda-tok
-		make-arrow-tok
-		make-and2-tok
-		make-or2-tok
-		make-op-tok
-		make-cp-tok
-		make-semi-tok
-		make-ob-tok
-		make-cb-tok
-		make-colon2-tok
-		make-colon-tok
-		make-under-tok
-		make-at-tok
-		make-id-tok
-		make-intConst-tok
-		make-stringConst-tok
+		make-case-tok "case"
+		make-of-tok "of"
+		make-if-tok "if"
+		make-then-tok "then"
+		make-else-tok "else"
+		make-true-tok "True"
+		make-false-tok "False"
+		make-error-tok "error"
+		make-data-tok "data"
+		make-boolean-tok "Boolean"
+		make-integer-tok "Integer"
+		make-double-tok "Double"
+		make-string-tok "String"
+		make-ignore (+ whitespace)
+		make-let-tok "let"
+		make-in-tok "in"
+		make-equal-tok "="
+		make-comma-tok ","
+		make-plus-tok "+"
+		make-minus-tok "-"
+		make-star-tok "*"
+		make-slash-tok "/"
+		make-equal2-tok "=="
+		make-notEqual-tok "/="
+		make-leq-tok "<="
+		make-less-tok "<"
+		make-geq-tok ">="
+		make-greater-tok ">"
+		make-plusDouble-tok "+."
+		make-minusDouble-tok "-."
+		make-timeDouble-tok "*."
+		make-divideDouble-tok "/."
+		make-equal2Double-tok "==."
+		make-notEqualDouble-tok "/=."
+		make-leqDouble-tok "<=."
+		make-lessDouble-tok "<."
+		make-geqDouble-tok ">=."
+		make-greaterDouble-tok ">."
+		make-lambda-tok "\\"
+		make-arrow-tok "->"
+		make-and2-tok "&&"
+		make-or2-tok "||"
+		make-op-tok "("
+		make-cp-tok ")"
+		make-semi-tok ";"
+		make-ob-tok "["
+		make-cb-tok "]"
+		make-colon2-tok "::"
+		make-colon-tok ":"
+		make-under-tok "_"
+		make-at-tok "@"
+		make-id-tok ident
+		make-intConst-tok digits
+		make-stringConst-tok string
 		make-doubleConst-tok
 	))
 
-<<<<<<< HEAD
-
-(def make-next (list make-lexer lex-spec lex-spec-actions))
+;(def make-next (list make-lexer lex-spec lex-spec-actions))
 
 
-=======
-(def make-next (make-lexer lex-spec lex-spec-actions))
->>>>>>> 8375cbb54ebd194dfb1442b864e935617470a2ee

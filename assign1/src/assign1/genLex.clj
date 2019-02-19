@@ -20,17 +20,17 @@
 
 (defn all-except? [e] (and (list? e) (= (first e) 'all-except)))
 
-(defn range? [e]  (and (list? e) (= (first e) 'range)))
+(defn range? [e] (and (list? e) (= (first e) 'range)))
 
 (defn or? [e]  (and (list? e) (= (first e) 'or)))
 
 (defn seqn? [e]  (and (list? e) (= (first e) 'seqn)))
 
-(defn optional? [e] (and (list? e) (= (first e) 'optional)))
+(defn optional? [e] (and (list? e) (= (first e) '?)))
 
-(defn star? [e]  (and (list? e) (= (first e) 'star)))
+(defn star? [e]  (and (list? e) (= (first e) '*)))
 
-(defn plus? [e]  (and (list? e) (= (first e) 'plus)))
+(defn plus? [e]  (and (list? e) (= (first e) '+)))
 
 (defn name? [e]
 	(and (symbol? e) (not (all? e)) (not (epsilon? e))))
@@ -55,7 +55,7 @@
 
 (defn search [x rbl]
     (if (empty? rbl) 
-        (throw (Exception. ((str x) " not found.")))
+        (throw (Exception. ("search:result not found.")))
         (if (= x (first (first rbl)))
             (second (first rbl))
             (search x (rest rbl)))))
@@ -158,9 +158,12 @@
 		(all? extendedRE) (exRange 0 126 (char 0))
 		(all-except? extendedRE) (exAllExcept 0 126 '*epsilon* (arg1 extendedRE))
 		(range? extendedRE) (exRange (int (arg1 extendedRE)) (int (arg2 extendedRE)) (arg1 extendedRE))
+		(seqn? extendedRE) (make-seqn (regularFromExtended (arg1 extendedRE)) (regularFromExtended (arg2 extendedRE)))
+		(or? extendedRE) (make-or (regularFromExtended (arg1 extendedRE)) (regularFromExtended (arg2 extendedRE)))
+		(star? extendedRE) (make-star (regularFromExtended (arg1 extendedRE)))
 		(string? extendedRE) (exString extendedRE '*epsilon*)
 		(optional? extendedRE) (make-or '*epsilon* (regularFromExtended (arg1 extendedRE)))
-		(plus? extendedRE) (make-seqn (arg1 extendedRE) (make-star (arg1 extendedRE)))
+		(plus? extendedRE) (make-seqn (regularFromExtended (arg1 extendedRE)) (make-star (regularFromExtended (arg1 extendedRE))))
 		:else extendedRE))
 
 ;3.a 
@@ -256,7 +259,7 @@
 						f0 (gen-state-num)
 						addStartTree (make-compound-trans (make-simple-trans q0 '*epsilon* (list (nfa-q0 nfa))) (nfa-delta nfa))
 						addJumpTree (make-compound-trans (make-simple-trans q0 '*epsilon* (list f0)) addStartTree)
-						addBackTree (make-compound-trans (make-simple-trans (first (nfa-final nfa)) '*epsilon* (list nfa-q0)) addJumpTree)
+						addBackTree (make-compound-trans (make-simple-trans (first (nfa-final nfa)) '*epsilon* (list (nfa-q0 nfa))) addJumpTree)
 						addEndTree (make-compound-trans (make-simple-trans (first (nfa-final nfa)) '*epsilon* (list f0)) addBackTree)
 						]
 						(make-nfa addEndTree q0 (list f0)))
@@ -300,7 +303,7 @@
 ;          (nfa-final (first nfas))
 ;	  (let [final (finalNFAs (rest nfas))]
 ;	       (concat (nfa-final (first nfas)) final))))
-
+; 7
 (defn finalNFAs [nfas]
       (map
           (fn [nfass] (first (nfa-final nfass))) nfas))
@@ -317,7 +320,8 @@
       (let [q0 (gen-state-num)
            	delta (transNFAs nfas q0)
 	   		final (mapToList (finalNFAs nfas))]
-           (make-nfa delta q0 final)))
+	   		;(println "final states" final)
+            (make-nfa delta q0 final)))
 
 ; test 7
 ; (def l3 (list (nfaFromRegExp '*epsilon*) (nfaFromRegExp \c)))
@@ -368,12 +372,16 @@
 
 ;10
 
+
+
 (defn getMaxState [tList maxState]
 	(if (empty? tList)
 		maxState
-		(if (> (first (simple-ostates (first tList))) maxState)
-			(recur (rest tList) (first (simple-ostates (first tList))))
-			(recur (rest tList) maxState))))
+		(do
+			(let [maxValue (apply max (conj (simple-ostates (first tList)) (simple-istate (first tList))))]
+			(if (> maxValue maxState)
+				(recur (rest tList) maxValue)
+				(recur (rest tList) maxState))))))
 
 (defn makeEmptyList [chrs aList] 
 	(if (< chrs 0) 
@@ -470,7 +478,7 @@
 
 (defn driverActionHelper [table eClosureFunc string iIndex curIndex stateList tripleList]
 	(if (or (empty? stateList) (>= curIndex (count string)))
-		(if (>= iIndex (dec (count string)))
+		(if (> iIndex (dec (count string)))
 			false
 			tripleList)
 		(do (let [third  (eClosureFunc (transferStates table stateList (get string curIndex) ()))
@@ -499,10 +507,12 @@
 		x
 		(insert (first x) (insertion-sort (rest x)))))
 
-(defn findMatchHelper [fList tList]
-	(if (inList (first fList) (arg2 tList))
-		(list (first fList) tList)
-		()))
+(defn findMatchHelper [fList triple]
+	(if (empty? fList)
+		()
+		(if (inList (first fList) (arg2 triple))
+			(list (first fList) triple)
+			(recur (rest fList) triple))))
 
 (defn findMatch [fList tList]
 	(if (empty? tList) 
@@ -512,15 +522,23 @@
 				pair
 				(recur fList (rest tList))))))
 
+(defn searchFromFBL [fState funcBindList]
+    (if (empty? funcBindList)
+    (throw (Exception. ( "searchFromFBL: state not found.")))
+    (if (inList fState (first (first funcBindList)))
+        (second (first funcBindList))
+        (searchFromFBL fState (rest funcBindList)))))
+
 (defn identifyLexeme [tripleList string fStateList mutableRefer funcBindList]
-	(let [fStateListSorted (insertion-sort fStateList)
+	(let [fStateListSorted (reverse fStateList)
 		matchRes (findMatch fStateListSorted tripleList)]
+		;(println "final sorted" fStateListSorted "triple list" tripleList matchRes)
 		(if (= false matchRes) 
 			false
 			(do (reset! mutableRefer (inc (arg1 (arg1 matchRes))))
 				(let [lexeme (subs string (first (arg1 matchRes)) (inc (arg1 (arg1 matchRes))))
 					fState (first matchRes)
-					func (search fState funcBindList)]
+					func (searchFromFBL fState funcBindList)]
 					(func lexeme))))))
 
 ; test 14
@@ -538,15 +556,20 @@
 ; 15
 ; [table eClosureFunc string iIndex curIndex stateList tripleList]
 (defn driverAction [driver string eofToken funcBindList]
-	(let [mutableRefer (atom 0)
-	 table (driver-table driver)
-	 ec (driver-epsilonClosure driver)
-	 q0 (driver-q0 driver)
-	 final (driver-final driver)]
-	 (fn [] (let [tripleList (driverActionHelper table ec string 0 0 (ec (list q0)) ())]
+	(def mutableRefer (atom 0))
+	(let [
+		 table (driver-table driver)
+		 ec (driver-epsilonClosure driver)
+		 q0 (driver-q0 driver)
+		 final (driver-final driver)]
+	 (fn [] (let [tripleList (driverActionHelper table ec string @mutableRefer @mutableRefer (ec (list q0)) ())]
+	 			;(println @mutableRefer)
 	 			(if (= tripleList false)
 	 				eofToken
-	 				(identifyLexeme tripleList string final mutableRefer funcBindList))))))
+	 				(let [tok (identifyLexeme tripleList string final mutableRefer funcBindList)]
+	 					(if (not (= false tok))
+	 						tok
+	 						(recur))))))))
 	             
 
 ; test 15
@@ -570,24 +593,24 @@
 
 (defn nfaFromPattern [patterns regularBList reList]
 	(if (empty? patterns)
-		(reListToNfaList reList ())
+		(reListToNfaList (reverse reList) ())
 		(let [extendedRE (extendedFromNames (first patterns) regularBList)]
 			(recur (rest patterns) regularBList (conj reList (regularFromExtended extendedRE))))))
 
 (defn getFuncBindList [nfaList funcList bList]
 	(if (empty? nfaList)
 		bList
-		(recur (rest nfaList) (rest funcList) (conj bList (list (first nfaList) (first funcList))))))
+		(recur (rest nfaList) (rest funcList) (conj bList (list (arg3 (first nfaList)) (first funcList))))))
 
 (defn make-lexer [defList funcList]
 	(let [
 		nameBList (arg1 (arg1 defList))
 		regularBList (buildEnv nameBList)
-		extendRBlist (conj regularBList (list 'whitespace (list 'range (char 0) (char 32))))
+		extendRBList (conj regularBList (list 'whitespace (make-range (char 0) (char 32))))
 		patterns (arg1 (arg2 defList))
-		nfaList (nfaFromPattern patterns extendRBlist ())
-		nfaAll (glueNFAs (nfaFromPattern patterns regularBList ()))
-		funcBindList (getFuncBindList nfaList funcList ())
+		nfaList (nfaFromPattern patterns extendRBList ())
+		nfaAll (glueNFAs nfaList)
+		funcBindList (getFuncBindList (reverse nfaList) funcList ())
 		aDriver (driverFromNFA nfaAll)
 		]
 		(fn [string] (driverAction aDriver string (arg1 (first defList)) funcBindList))
@@ -643,3 +666,110 @@
 
 ; (let [abc "abc"] (println (get abc 1))
 ; 	(println abc))
+; (def patterns  '("case"
+;     "of"
+;     "if"
+;     "then"
+;     "else"
+;     "True"
+;     "False"
+;     "error"
+;     "data"
+;     "Boolean"
+;     "Integer"
+;     "Double"
+;     "String"
+;     (+ whitespace)
+;     "let"
+;     "in"
+;     "="
+;     ","
+;     "+"
+;     "-"
+;     "*"
+;     "/"
+;     "=="
+;     "/="
+;     "<="
+;     "<"
+;     ">="
+;     ">"
+;     "+."
+;     "-."
+;     "*."
+;     "/."
+;     "==."
+;     "/=."
+;     "<=."
+;     "<."
+;     ">=."
+;     ">."
+;     "\\"
+;     "->"
+;     "&&"
+;     "||"
+;     "("
+;     ")"
+;     ";"
+;     "["
+;     "]"
+;     "::"
+;     ":"
+;     "_"
+;     "@"
+;     ident
+;     digits
+;     string
+;     double))
+
+; (def nameBL '((lower (range \a \z)); lower → a · · · z
+; 		(upper (range \A \Z)); upper → A · · · Z
+; 		(letter (or upper lower)); letter → lower | upper
+;     	(letters (+ letter))
+; 		(digit (range \0 \9));digit → 0 · · · 9
+; 		(idfirst (or (or letter \_) \$)); idfirst → letter | | $
+; 		(idrest (or idfirst digit)); idrest → idfirst | digit
+; 		(ident (seqn idfirst (* idrest))); ident → idfirst idrest*
+; 		(digits (+ digit)); digits → digit+
+; 		(double (seqn digits (seqn (? (seqn \. digits)) 
+; 								   (? (seqn (or \E \e) 
+; 								   	  		(seqn (? (seqn \+ \-)) 
+; 								   	  			  digits))))));double → digits(. digits)?((E | e)(+ | −) ?digits)?
+; 		(string (seqn \" 
+;       					  (seqn (* (all-except (\")))
+;       					  		   \"))); string → "(Σ − {"})*"
+;     ))
+
+; (def re '(seqn digits (seqn (? (seqn \. digits)) 
+; 								   (? (seqn (or \E \e) 
+; 								   	  		(seqn (? (seqn \+ \-)) 
+; 								   	  			  digits)))))
+; 	)
+
+;(println (regularFromExtended (extendedFromNames re (buildEnv nameBL))))
+
+; (def regularBList (buildEnv nameBL))
+; (def extendRBList (conj regularBList (list 'whitespace (make-range (char 0) (char 32)))))
+;(println extendRBList)
+;(println regularBList)
+;(println (nfaFromPattern patterns extendRBList ()))
+
+; (defn pt [patterns]
+; 	(if (empty? patterns)
+; 		"end"
+; 		(do 
+; 			(println (first patterns) (regularFromExtended (extendedFromNames (first patterns) extendRBList)))
+; 			(recur (rest patterns)))))
+; (defn pt [patterns]
+; 	(if (empty? patterns)
+; 		"end"
+; 		(do 
+; 			(println (first patterns) (nfaFromRegExp (regularFromExtended (extendedFromNames (first patterns) extendRBList))))
+; 			(recur (rest patterns)))))
+; (pt patterns)
+
+
+;(println (nfaFromRegExp '(seqn (range ))
+;(println (first patterns) (regularFromExtended (extendedFromNames '(+ whitespace) extendRBList)))
+
+
