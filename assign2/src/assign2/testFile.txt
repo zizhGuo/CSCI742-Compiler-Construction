@@ -1,0 +1,58 @@
+pi : Double
+pi = 3.14
+
+data Float = Box(Double)
+
+data MyList(a) = MT() || Cons(a, MyList(a))
+
+data Either(a,b) = Left(a) || Right(b)
+
+arith : Integer
+arith = 2+3*4
+
+lst1 : [Integer]
+lst1 = [1,2,3]
+
+triple : ((), [a], [Integer])
+triple = ((), [], [99+1])
+
+fact : Integer -> Integer
+fact(0) = 1
+fact(n) = n * fact(n-1)
+
+mkAdd : Integer -> Integer -> Integer
+mkAdd(n)(m) = n+m
+
+seven : Integer
+seven = mkAdd(2)(5)
+
+facta : (Integer, Integer) -> Integer
+facta(n,a) = if n == 0 then a else facta(n-1,n*a)
+
+map : (a -> b, [a]) -> [b]
+map(f, [])    = []
+map(f, x::xs) = f(x)::map(f,xs)
+
+reva : ([t], [t]) -> [t]
+reva([], a)    = a
+reva(x::xs, a) = reva(xs, x::a)
+
+rev2 : ([t], [t]) -> [t]
+rev2 = \([], a)->(a);(x::xs, a)->(rev2(xs,x::a))
+
+foo : Double -> Double
+foo(-.2.718) = 1.0
+
+bar : (a->b, MyList(a)) -> MyList(b)
+
+baz : Either(a, b)
+
+test = a || b || c || d
+
+test2 = 1 + 2 + 3 + 4
+
+append : ([a], [a]) -> [a]
+append(L1, L2) =
+  case L1 of
+   []    -> (L2);
+   x::xs -> (x::append(xs, L2))
