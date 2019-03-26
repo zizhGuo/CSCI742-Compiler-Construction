@@ -6,4 +6,5 @@
   :dependencies [[org.clojure/clojure "1.9.0"]]
   :main ^:skip-aot assign2.core
   :target-path "target/%s"
+  :resource-paths ["resources/parDemo.jar"]
   :profiles {:uberjar {:aot :all}})

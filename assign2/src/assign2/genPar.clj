@@ -309,6 +309,8 @@
 		PredictList (map #(list % ((make-predict g) %)) extendG)
 		]
 		;(println actionList)
+		;(println mergeNF)
+		;(println (count mergeNF))
 		(loop [
 			ps PredictList
 			g g
@@ -336,14 +338,17 @@
 			 	(when (not (empty? vars))
 			 		;(println (first vars) "->" (@oracle (first vars)))
 			 		(recur (rest vars))))
-		  ;print oracle
+		;(println @oracle )
 
 		(let [
 			getOne 
 			(fn [vari termi] 
-				(if (empty? ((@oracle vari) termi))
-					(throw (Exception. "There is no right-hand-side entry"))
-					((@oracle vari) termi)))
+				(do
+					;(println vari termi "------")
+					(if (empty? ((@oracle vari) termi))
+						(throw (Exception. "There is no right-hand-side entry"))
+						((@oracle vari) termi)))
+				)
 			]
 			(fn [vars ters] 
 				(let [inputs (partition 2 (interleave vars ters))]
@@ -386,6 +391,8 @@
 	  ]
     (do
      	(while (first @stk)
+     		;(println "stack" @stk)
+    		;(println "semantic stack" @sstk)
 				;??: possible to consider if (pop-first) starts with "'quote" ??: peekf already did advance
         (cond 
         	(and (terminal? (pop-first stk)) (= (remove-quote (pop-first stk)) (token-name (peekf))))             
@@ -414,7 +421,8 @@
 					    topN (reverse (take n @sstk)); get the top N
 							]
 						  (do
-						  	;(println "topN ---" topN)
+						  	;(println "n =" n)
+								;(println "first stk = " (pop-first stk))
 					      (pop-update stk)
 	        			(pop-update-sstk-n n)
 	        			;(println "before" @sstk)
@@ -432,10 +440,13 @@
       	stack (concat (rule-rhs (first g)) (list (make-actionSym (count (rule-rhs (first g))) (first actionList))))
       	semantic-stack '()]
 	      (fn [next-token]
-	          (let [
-	          	token (atom '())
-	          	advancef (fn [] (reset! token (next-token)))
-	          	peekf (fn [] (if (empty? @token) (do (advancef) @token) @token))
-		          ]
-	          	(parse oraclef peekf advancef stack semantic-stack)))))
+          (let [
+          	token (atom '())
+          	advancef (fn [] (reset! token (next-token)))
+          	peekf (fn [] (if (empty? @token) (do (advancef) @token) @token))
+	          ]
+	          (do
+	          	;(println "next token" (peekf))
+          		(parse oraclef peekf advancef stack semantic-stack)))))
+      			)
 

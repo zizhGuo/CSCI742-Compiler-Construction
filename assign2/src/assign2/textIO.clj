@@ -14,9 +14,9 @@
          (println "Parse Tree:")
          (println tree))
       (catch FileNotFoundException e (println "File not found."))
-      (catch Exception e (println (str "A problem was found. " 
-                                       (str e) 
-                                       " Execution ending.")))
+      ; (catch Exception e (println (str "A problem was found. " 
+      ;                                  (str e) 
+      ;                                  " Execution ending.")))
       ))
 
 (defn display-usage [args]
