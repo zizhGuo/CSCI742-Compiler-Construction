@@ -1,0 +1,27 @@
+((pi main)
+ ((goto label*4)
+  main
+  (extend y*3)
+  (load y*3)
+  (prim *isUnit*)
+  (if-not-goto label*6)
+  (load-global pi)
+  (goto label*7)
+  label*6
+  (goto f*2)
+  label*7
+  (goto label*5)
+  f*2
+  (ldc "No patterns matched.")
+  (halt)
+  label*5
+  (return)
+  label*4
+  (prim *gen-unit*)
+  (create-closure main)
+  (store main)
+  (ldc 3.14)
+  (store pi)
+  (prim *gen-unit*)
+  (invoke main)
+  (halt)))

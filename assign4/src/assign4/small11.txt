@@ -1,0 +1,5 @@
+foo : Double -> Double
+foo(-.2.718) = 1.0
+
+main : () -> Double
+main() = foo(-.2.718)

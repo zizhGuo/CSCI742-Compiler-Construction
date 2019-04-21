@@ -1,0 +1,6 @@
+reva : ([t], [t]) -> [t]
+reva([], a)    = a
+reva(x::xs, a) = reva(xs, x::a)
+
+main : () -> [Integer]
+main() = reva([1,2,3,4], [])

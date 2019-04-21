@@ -1,0 +1,5 @@
+test3 : Boolean
+test3 = True || False && True || False
+
+main : () -> Boolean
+main() = test3

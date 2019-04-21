@@ -1,0 +1,125 @@
+pi : Double
+pi = 3.14
+
+data Float = Box(Double)
+
+data MyList(a) = MT() || Cons(a, MyList(a))
+
+data Either(a,b) = Left(a) || Right(b)
+
+arith : Integer
+arith = 2+3*4
+
+lst1 : [Integer]
+lst1 = [1,2,3]
+
+triple : ((), [a], [Integer])
+triple = ((), [], [99+1])
+
+fact : Integer -> Integer
+fact(0) = 1
+fact(n) = n * fact(n-1)
+
+mkAdd : Integer -> Integer -> Integer
+mkAdd(n)(m) = n+m
+
+seven : Integer
+seven = mkAdd(2)(5)
+
+facta : (Integer, Integer) -> Integer
+facta(n,a) = if n == 0 then a else facta(n-1,n*a)
+
+map : (a -> b, [a]) -> [b]
+map(f, [])    = []
+map(f, x::xs) = f(x)::map(f,xs)
+
+reva : ([t], [t]) -> [t]
+reva([], a)    = a
+reva(x::xs, a) = reva(xs, x::a)
+
+rev2 : ([t], [t]) -> [t]
+rev2 = \([], a)->(a);(x::xs, a)->(rev2(xs,x::a))
+
+foo : Double -> Double
+foo(-.2.718) = 1.0
+
+bar : (a->b, MyList(a)) -> MyList(b)
+
+baz : Either(a, b)
+
+test : Boolean
+test = True || False || True || False
+
+test2 : Integer
+test2 = 1 + 2 + 3 + 4
+
+test3 : Boolean
+test3 = True || False && True || False
+
+append : ([a], [a]) -> [a]
+append(L1, L2) =
+  case L1 of
+   []    -> (L2);
+   x::xs -> (x::append(xs, L2))
+
+
+curAppend : [a] -> [a] -> [a]
+curAppend([])(L)    =  L
+curAppend(x::xs)(L) = x::curAppend(xs)(L)
+
+myAppend : (MyList(a), MyList(a)) -> MyList(a)
+myAppend(L1, L2) =
+  case L1 of
+   MT()       -> (L2);
+   Cons(x,xs) -> (Cons(x, myAppend(xs, L2)))
+
+
+insert : (Integer, [Integer]) -> [Integer]
+insert(x, [])    = [x]
+insert(x, y::ys) = if x <= y then x::y::ys else y::insert(x, ys)
+
+iSort : [Integer] -> [Integer]
+iSort([])    = []
+iSort(x::xs) = insert(x, iSort(xs))
+
+
+abs : Double -> Double
+abs(x) = if x <. 0.0 then -. x else x
+
+average : (Double, Double) -> Double
+average(x, y) = (x+.y)/.2.0
+
+improveSqrtGuess : (Double, Double) -> Double
+improveSqrtGuess(a, g) = average(g, (a/.g))
+
+epsilon : Double
+epsilon = 0.0000000001
+
+isCloseEnough : (Double, Double) -> Boolean
+isCloseEnough(x, y) = abs(1.0-.(x/.y)) <. epsilon
+
+sqrtIter : (Double, Double) -> Double
+sqrtIter(a, g) = if isCloseEnough(g*.g, a) then g else sqrtIter(a, improveSqrtGuess(a, g))
+
+
+sqrt : Double -> Double
+sqrt(x) = sqrtIter(x, 1.0)
+
+quad : (Double, Double, Double) -> (Double, Double)
+quad(a,b,c) =
+  let e = b*.b -. 4.0*.a*.c,
+      d = sqrt(e)
+  in ((-.b +. d)/.(2.0*.a), (-.b -. d)/.(2.0*.a))
+
+maxRoot : (Double, Double, Double) -> Double
+maxRoot(a,b,c) = let (r1, r2) = quad(a,b,c) in r1
+
+head : [a] -> a
+head(L) =
+  case L of
+   []    -> (error "Can't take head.");
+   x::xs -> (x)
+
+head2 : [a] -> Either(String, a)
+head2([])    = Left("Oops")
+head2(x::xs) = Right(x)

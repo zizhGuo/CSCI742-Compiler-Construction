@@ -1,0 +1,33 @@
+abs : Double -> Double
+abs(x) = if x <. 0.0 then -. x else x
+
+average : (Double, Double) -> Double
+average(x, y) = (x+.y)/.2.0
+
+improveSqrtGuess : (Double, Double) -> Double
+improveSqrtGuess(a, g) = average(g, (a/.g))
+
+epsilon : Double
+epsilon = 0.0000000001
+
+isCloseEnough : (Double, Double) -> Boolean
+isCloseEnough(x, y) = abs(1.0-.(x/.y)) <. epsilon
+
+sqrtIter : (Double, Double) -> Double
+sqrtIter(a, g) = if isCloseEnough(g*.g, a) then g else sqrtIter(a, improveSqrtGuess(a, g))
+
+
+sqrt : Double -> Double
+sqrt(x) = sqrtIter(x, 1.0)
+
+quad : (Double, Double, Double) -> (Double, Double)
+quad(a,b,c) =
+  let e = b*.b -. 4.0*.a*.c,
+      d = sqrt(e)
+  in ((-.b +. d)/.(2.0*.a), (-.b -. d)/.(2.0*.a))
+
+maxRoot : (Double, Double, Double) -> Double
+maxRoot(a,b,c) = let (r1, r2) = quad(a,b,c) in r1
+
+main : () -> [Double]
+main() = [abs(5.0), abs(-.5.0), sqrt(2.0), maxRoot(1.0, -.5.0, 6.0)]

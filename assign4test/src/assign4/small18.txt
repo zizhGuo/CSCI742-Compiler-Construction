@@ -1,0 +1,10 @@
+insert : (Integer, [Integer]) -> [Integer]
+insert(x, [])    = [x]
+insert(x, y::ys) = if x <= y then x::y::ys else y::insert(x, ys)
+
+iSort : [Integer] -> [Integer]
+iSort([])    = []
+iSort(x::xs) = insert(x, iSort(xs))
+
+main : () -> [Integer]
+main() = iSort([3,1,5,4,2])

@@ -1,0 +1,5 @@
+(Box (forall () (ArrowType (DoubleType) (NamedType Float (UnitType)))))
+(MT (forall (a) (ArrowType (UnitType) (NamedType MyList a))))
+(Cons (forall (a) (ArrowType (TupleType (a (NamedType MyList a))) (NamedType MyList a))))
+(Left (forall (a b) (ArrowType a (NamedType Either (TupleType (a b))))))
+(Right (forall (a b) (ArrowType b (NamedType Either (TupleType (a b))))))

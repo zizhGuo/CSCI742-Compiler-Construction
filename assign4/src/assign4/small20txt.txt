@@ -1,0 +1,8 @@
+head : [a] -> a
+head(L) =
+  case L of
+   []    -> (error "Can't take head.");
+   x::xs -> (x)
+
+main : () -> Integer
+main() = head([99,100,101])

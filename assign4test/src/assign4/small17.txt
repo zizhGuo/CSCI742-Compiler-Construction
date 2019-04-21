@@ -1,0 +1,10 @@
+data MyList(a) = MT() || Cons(a, MyList(a))
+
+myAppend : (MyList(a), MyList(a)) -> MyList(a)
+myAppend(L1, L2) =
+  case L1 of
+   MT()       -> (L2);
+   Cons(x,xs) -> (Cons(x, myAppend(xs, L2)))
+
+main : () -> MyList(Integer)
+main() = myAppend(Cons(1,Cons(2,Cons(3,MT()))), Cons(4,Cons(5,Cons(6,MT()))))

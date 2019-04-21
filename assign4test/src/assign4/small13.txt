@@ -1,0 +1,5 @@
+test2 : Integer
+test2 = 1 + 2 + 3 + 4
+
+main : () -> Integer
+main() = test2

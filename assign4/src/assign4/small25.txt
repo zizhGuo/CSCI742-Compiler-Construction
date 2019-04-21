@@ -1,0 +1,6 @@
+tails : [a] -> [[a]]
+tails([]) = []
+tails(x::xs) = xs :: tails(xs)
+
+main : () -> [[Integer]]
+main() = tails([1,2,3])

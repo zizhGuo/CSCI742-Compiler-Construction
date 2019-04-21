@@ -1,0 +1,7 @@
+(()
+ ((ldc 3)
+  (ldc 4)
+  (prim *+i*)
+  (ldc 2)
+  (prim *divi*)
+  (halt)))

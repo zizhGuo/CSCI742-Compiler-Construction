@@ -1,0 +1,9 @@
+map : (a -> b, [a]) -> [b]
+map(f, [])    = []
+map(f, x::xs) = f(x)::map(f,xs)
+
+square : Integer -> Integer
+square(x) = x*x
+
+main : () -> [Integer]
+main() = map(square, [1,2,3,4])

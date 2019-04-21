@@ -1,0 +1,5 @@
+pi : Double
+pi = 3.14
+
+main : () -> Double
+main() = let pi = 2.71828 in pi

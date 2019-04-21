@@ -1,0 +1,8 @@
+data Either(a,b) = Left(a) || Right(b)
+
+head2 : [a] -> Either(String, a)
+head2([])    = Left("Oops")
+head2(x::xs) = Right(x)
+
+main : () -> Either(String, Integer)
+main() = head2([])

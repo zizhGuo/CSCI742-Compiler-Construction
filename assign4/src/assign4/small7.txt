@@ -1,0 +1,5 @@
+facta : (Integer, Integer) -> Integer
+facta(n,a) = if n == 0 then a else facta(n-1,n*a)
+
+main : () -> Integer
+main() = facta(5, 1)

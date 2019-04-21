@@ -1,0 +1,5 @@
+arith : Integer
+arith = 2+3*4
+
+main : () -> Integer
+main() = arith

@@ -1,0 +1,11 @@
+mkAdd : Integer -> Integer -> Integer
+mkAdd(n)(m) = n+m
+
+add2 : Integer -> Integer
+add2 = mkAdd(2)
+
+seven : Integer
+seven = add2(5)
+
+main : () -> Integer
+main() = seven

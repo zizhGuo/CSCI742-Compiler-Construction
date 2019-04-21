@@ -1,0 +1,5 @@
+rev2 : ([t], [t]) -> [t]
+rev2 = \([], a)->(a);(x::xs, a)->(rev2(xs,x::a))
+
+main : () -> [Integer]
+main() = rev2([1,2,3,4], [])

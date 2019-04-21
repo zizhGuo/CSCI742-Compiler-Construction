@@ -1,0 +1,8 @@
+append : ([a], [a]) -> [a]
+append(L1, L2) =
+  case L1 of
+   []    -> (L2);
+   x::xs -> (x::append(xs, L2))
+
+main : () -> [Integer]
+main() = append([1,2,3], [4,5,6,7])
