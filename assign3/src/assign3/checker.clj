@@ -1,3 +1,5 @@
+;Author: Tao Yang, Zizhun Guo
+
 (ns assign3.checker
 	(:use [assign3.parser])
 	(:use [assign3.unification :only (unifyTerm4 

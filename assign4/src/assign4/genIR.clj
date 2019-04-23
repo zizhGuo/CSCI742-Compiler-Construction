@@ -249,7 +249,97 @@
 
 ;1j
 
- (defn funs-from-exp-helper [exp idList]
+(defn extract-unbounded-list [exp idList unbounded-vars]
+  (cond 
+    ;; 1. vaiable
+    (variable? exp)
+    (let [
+          bounded (contains? (set unbounded-vars) exp)
+          ]
+      (if bounded 
+        unbounded-vars
+        (conj unbounded-vars exp)))
+    
+    ;; 2. let1
+    (let1? exp)
+    (let [
+          idList-extended (conj idList (arg1 exp))
+          unbounded-vars-updated (extract-unbounded-list (arg2 exp) idList unbounded-vars)
+          ]
+      (extract-unbounded-list (arg3 exp) idList-extended unbounded-vars-updated))
+    
+    ;; 3. Let-thunk
+    (let-thunk? exp)
+    (let [
+          idList-extended (conj idList (arg1 exp))
+          unbounded-vars-updated (extract-unbounded-list (arg2 exp) idList unbounded-vars)
+          ]
+      (extract-unbounded-list (arg3 exp) idList-extended unbounded-vars-updated))
+    
+    ;; 4. Lambda1
+    (lambda1? exp)
+    (let [
+          idList-extended (conj idList (arg1 exp))
+          ]
+      (extract-unbounded-list (arg2 exp) idList-extended unbounded-vars))
+     
+    ;; 5. Tuple
+    (tuple? exp)
+     (let [
+          unbounded-list (map #(extract-unbounded-list % idList unbounded-vars) (arg1 exp))
+          ]
+      (apply concat unbounded-list))
+    ;; Should it just return the original unbounded-vars because it is a label?
+    
+    ;; 6. Tail-call-thunk
+    (tail-call-thunk? exp)
+    unbounded-vars
+    
+    ;; 7. Constant
+    (constant? exp)
+    unbounded-vars
+    
+    ;; 8. If
+    (if? exp)
+    (let [
+          vars1 (extract-unbounded-list (arg1 exp) idList unbounded-vars)
+          vars2 (extract-unbounded-list (arg2 exp) idList unbounded-vars)
+          vars3 (extract-unbounded-list (arg3 exp) idList unbounded-vars)
+          ]
+      (concat vars1 vars2 vars3))
+    
+    ;; 9. Call 
+    (call? exp)
+    (let [
+          vars1 (extract-unbounded-list (arg1 exp) idList unbounded-vars)
+          vars2 (extract-unbounded-list (arg2 exp) idList unbounded-vars)
+          ]
+      (concat vars1 vars2))
+
+    ;; 10. Error
+    (error? exp)
+    (let [
+          vars (extract-unbounded-list (arg1 exp) idList unbounded-vars)
+          ]
+      vars)
+    
+    ;; 11. Global call
+    (global-call? exp)
+    (let [
+          vars1 (extract-unbounded-list (arg1 exp) idList unbounded-vars)
+          vars2 (extract-unbounded-list (arg2 exp) idList unbounded-vars)
+          ]
+      (concat vars1 vars2))
+    
+    ;; 11. Exception
+    :else
+    (throw (Exception. "exp is invalid."))))
+
+(defn make-let-closure [unbounded-vars exp]
+  (if (empty? unbounded-vars) exp
+      (make-let1 (first unbounded-vars) '*closure-var* (make-let-closure (rest unbounded-vars) exp))))
+
+(defn funs-from-exp-helper [exp idList]
    (cond 
      ;; 1. Variable
      (variable? exp) 
@@ -321,7 +411,8 @@
                let-operand (funs-from-exp-helper (arg2 operator) idList)
                ]
            (vector (make-let1 (arg1 operator) operand-updated (first let-operand)) (concat idList-updated (second let-operand))))
-         (and (variable? operator) (not (= nil (some #(= % operator) (map first idList)))))
+         ;;(and (variable? operator) (not (= nil (some #(= % operator) (map first idList)))))  ;; Should be modified because the idList is the list of symbol.
+         (and (variable? operator) (not (= nil (some #(= % operator) idList))))
          (vector (make-global-call operator operand-updated) idList-updated)
          :else
          (let [
@@ -339,10 +430,14 @@
            exp-updated (first v)
            idList-updated (second v)
            lambda-updated (make-lambda1 (arg1 exp) exp-updated)
+
+           unbounded-vars (distinct (extract-unbounded-list lambda-updated idList-updated '() )) 
            
-           new-let (make-let '! closure-var '!!!)
+           exp-closure (make-closure anno unbounded-vars)
            
-           exp-closure (make-closure anno '!!)
+           ;;new-let (make-let _? '*closure-var* lambda-updated)
+           new-let (make-let-closure unbounded-vars lambda-updated)
+           
            new-pair-body (make-lambda1 (arg1 exp) new-let)
            
            new-idList (concat (list (list anno new-pair-body)) idList-updated)
@@ -383,8 +478,9 @@
 (def exp1 '(lambda1 x*1546 (case x*1546 (((TuplePat (a b c)) (case (call quad (Tuple (a b c))) (((TuplePat (r1 r2)) r1))))))))
 
 ;; (def exp2 '(fact (lambda1 x*1526 (case x*1526 ((0 1) (n (call **i* (Tuple (n (call fact (call *-i* (Tuple (n 1)))))))))))))
-;; (println (rename-locals (transform-exp exp1)))
-
+(println (rename-locals (transform-exp exp1)))
+(println "--------------")
+(println "--------------")
 (println (funs-from-exp-top (rename-locals (transform-exp exp1)) '() ))
 ;(println (transform-exp exp1))
 
